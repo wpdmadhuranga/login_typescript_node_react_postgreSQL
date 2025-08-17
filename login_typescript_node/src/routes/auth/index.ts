@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { SuccessResponse, CreatedResponse } from '../../core/ApiResponse';
 import { BadRequestError, AuthFailureError } from '../../core/ApiError';
 import asyncHandler from '../../helpers/asyncHandler';
@@ -13,7 +13,7 @@ const router = express.Router();
 router.post(
   '/signup',
   validator(schema.signup),
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
 
     // Check if user already exists
@@ -27,19 +27,19 @@ router.post(
 
     // Generate JWT token
     const token = JWT.sign({
-      userId: user._id.toString(),
+      userId: user.id.toString(),
       email: user.email
     });
 
     // Generate refresh token
     const refreshToken = JWT.signRefresh({
-      userId: user._id.toString(),
+      userId: user.id.toString(),
       email: user.email
     });
 
     return new CreatedResponse('User created successfully', {
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         createdAt: user.createdAt
@@ -56,7 +56,7 @@ router.post(
 router.post(
   '/login',
   validator(schema.login),
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     // Find user with password
@@ -73,19 +73,19 @@ router.post(
 
     // Generate JWT token
     const token = JWT.sign({
-      userId: user._id.toString(),
+      userId: user.id.toString(),
       email: user.email
     });
 
     // Generate refresh token
     const refreshToken = JWT.signRefresh({
-      userId: user._id.toString(),
+      userId: user.id.toString(),
       email: user.email
     });
 
     return new SuccessResponse('Login successful', {
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         createdAt: user.createdAt

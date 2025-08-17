@@ -6,15 +6,13 @@ export const config = {
   // Database
   database: {
     host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 27017,
+    port: parseInt(process.env.DB_PORT || '5432'),
     name: process.env.DB_NAME || 'auth_db',
-    user: process.env.DB_USER || '',
+    user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
+    dialect: 'postgres' as const,
     get uri() {
-      if (this.user && this.password) {
-        return `mongodb://${this.user}:${this.password}@${this.host}:${this.port}/${this.name}`;
-      }
-      return `mongodb://${this.host}:${this.port}/${this.name}`;
+      return `postgresql://${this.user}:${this.password}@${this.host}:${this.port}/${this.name}`;
     }
   },
   
@@ -23,7 +21,7 @@ export const config = {
     secret: process.env.JWT_SECRET || 'fallback-secret-change-in-production',
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d'
-  },
+  } as const,
   
   // CORS
   cors: {

@@ -1,74 +1,87 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Table, Column, Model, DataType, CreatedAt, UpdatedAt, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
 import bcrypt from 'bcrypt';
 
-export interface IUser extends Document {
-  _id: mongoose.Types.ObjectId;
+export interface IUser {
+  id?: number;
   name: string;
   email: string;
   password: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const userSchema = new Schema<IUser>({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-    minlength: 2,
-    maxlength: 100
-  },
-  email: {
-    type: String,
-    required: true,
+@Table({
+  tableName: 'users',
+  timestamps: true
+})
+export class User extends Model<IUser> implements IUser {
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: false,
+    validate: {
+      len: [2, 100]
+    }
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: false,
     unique: true,
-    lowercase: true,
-    trim: true,
-    match: [
-      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-      'Please enter a valid email'
-    ]
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6,
-    select: false // Don't return password by default
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+    validate: {
+      isEmail: true
+    }
+  })
+  email!: string;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: false,
+    validate: {
+      len: [6, 255]
+    }
+  })
+  password!: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true
+  })
+  isActive!: boolean;
+
+  @CreatedAt
+  createdAt!: Date;
+
+  @UpdatedAt
+  updatedAt!: Date;
+
+  // Hash password before saving
+  @BeforeCreate
+  @BeforeUpdate
+  static async hashPassword(instance: User) {
+    if (instance.changed('password')) {
+      const saltRounds = 12;
+      instance.password = await bcrypt.hash(instance.password, saltRounds);
+    }
   }
-}, {
-  timestamps: true,
-  versionKey: false
-});
 
-// Hash password before saving
-userSchema.pre<IUser>('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error: any) {
-    next(error);
+  // Instance method to compare password
+  async comparePassword(candidatePassword: string): Promise<boolean> {
+    return bcrypt.compare(candidatePassword, this.password);
   }
-});
 
-// Instance method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-// Remove password from JSON output
-userSchema.methods.toJSON = function() {
-  const userObject = this.toObject();
-  delete userObject.password;
-  return userObject;
-};
-
-export const User = mongoose.model<IUser>('User', userSchema);
+  // Remove password from JSON output
+  toJSON() {
+    const values = { ...this.get() } as any;
+    delete values.password;
+    return values;
+  }
+}

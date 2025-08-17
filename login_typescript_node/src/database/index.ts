@@ -1,12 +1,35 @@
-import mongoose from 'mongoose';
+import { Sequelize } from 'sequelize-typescript';
 import { config } from '../config';
 import Logger from '../core/Logger';
+import path from 'path';
 
-// Database connection
+// Initialize Sequelize with PostgreSQL
+const sequelize = new Sequelize({
+  dialect: 'postgres',
+  host: config.database.host,
+  port: config.database.port,
+  database: config.database.name,
+  username: config.database.user,
+  password: config.database.password,
+  models: [path.join(__dirname, 'models')], // Path to models directory
+  logging: (msg) => Logger.debug(msg), // Use our logger for SQL queries
+  pool: {
+    max: 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  }
+});
+
+// Database connection function
 const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(config.database.uri);
-    Logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    await sequelize.authenticate();
+    Logger.info(`PostgreSQL Connected: ${config.database.host}:${config.database.port}`);
+    
+    // Sync database (create tables if they don't exist)
+    await sequelize.sync({ alter: true });
+    Logger.info('Database synchronized');
   } catch (error) {
     Logger.error('Database connection failed:', error);
     process.exit(1);
@@ -14,12 +37,11 @@ const connectDB = async (): Promise<void> => {
 };
 
 // Handle connection events
-mongoose.connection.on('disconnected', () => {
-  Logger.warn('MongoDB disconnected');
+process.on('SIGINT', async () => {
+  Logger.info('Closing database connection...');
+  await sequelize.close();
+  process.exit(0);
 });
 
-mongoose.connection.on('error', (error) => {
-  Logger.error('MongoDB connection error:', error);
-});
-
+export { sequelize };
 export default connectDB;

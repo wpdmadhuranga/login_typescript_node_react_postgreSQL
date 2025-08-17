@@ -10,13 +10,15 @@ export interface JWTPayload {
 
 export class JWT {
   public static sign(payload: JWTPayload): string {
-    return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn
-    });
+    return jwt.sign(
+      { userId: payload.userId, email: payload.email }, 
+      config.jwt.secret as string, 
+      { expiresIn: config.jwt.expiresIn as string }
+    );
   }
 
   public static verify(token: string): JWTPayload {
-    return jwt.verify(token, config.jwt.secret) as JWTPayload;
+    return jwt.verify(token, config.jwt.secret as string) as JWTPayload;
   }
 
   public static decode(token: string): JWTPayload | null {
@@ -24,8 +26,10 @@ export class JWT {
   }
 
   public static signRefresh(payload: JWTPayload): string {
-    return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.refreshExpiresIn
-    });
+    return jwt.sign(
+      { userId: payload.userId, email: payload.email }, 
+      config.jwt.secret as string, 
+      { expiresIn: config.jwt.refreshExpiresIn as string }
+    );
   }
 }

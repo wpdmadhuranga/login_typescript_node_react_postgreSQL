@@ -27,14 +27,14 @@ export const authenticate = asyncHandler(async (req: Request, res: Response, nex
     const payload = JWT.verify(token);
     
     // Find user
-    const user = await UserRepository.findById(payload.userId);
+    const user = await UserRepository.findById(parseInt(payload.userId));
     if (!user) {
       throw new AuthFailureError('User not found');
     }
 
     // Add user info to request
     req.user = user;
-    req.userId = user._id.toString();
+    req.userId = user.id.toString();
     
     next();
   } catch (error: any) {
