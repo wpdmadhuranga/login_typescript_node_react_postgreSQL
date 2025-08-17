@@ -1,0 +1,57 @@
+{
+  "name": "login-typescript-node",
+  "version": "1.0.0",
+  "description": "TypeScript Node.js Authentication API with Login and Signup",
+  "main": "build/server.js",
+  "scripts": {
+    "start": "npm run build && npm run serve",
+    "serve": "node -r dotenv/config build/server.js",
+    "build": "npm run clean && npm run build-ts",
+    "watch": "npx concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "watch-node": "nodemon -r dotenv/config build/server.js",
+    "clean": "rimraf ./build",
+    "build-ts": "tsc",
+    "watch-ts": "tsc -w",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "test": "jest --forceExit --detectOpenHandles --coverage"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.8.7",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/cors": "^2.8.15",
+    "@types/supertest": "^2.0.16",
+    "typescript": "^5.2.2",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "nodemon": "^3.0.1",
+    "rimraf": "^5.0.5",
+    "concurrently": "^8.2.2",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.7",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.1.1"
+  },
+  "keywords": [
+    "typescript",
+    "nodejs",
+    "express",
+    "authentication",
+    "jwt",
+    "mongodb",
+    "api"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
